@@ -98,7 +98,7 @@ import ChatHistory from './components/ChatHistory.vue'
 import MessageToolbar from './components/MessageToolbar.vue'
 import QuickReplies from './components/QuickReplies.vue'
 import UserInput from './components/UserInput.vue'
-import lmStudioAPI from './services/lmStudioApi.js'
+import apiManager from './services/apiManager.js'
 
 export default {
   name: 'App',
@@ -251,15 +251,15 @@ export default {
       }
       
       try {
-        const result = await lmStudioAPI.checkConnection()
+        const result = await apiManager.checkConnection()
         const wasConnected = isConnected.value
         isConnected.value = result.connected
         
         // 只在连接状态发生变化时打印日志
         if (result.connected && !wasConnected) {
-          console.log('✅ LM Studio 连接成功')
+          console.log(`✅ ${result.apiType.toUpperCase()} 连接成功`)
         } else if (!result.connected && wasConnected) {
-          console.error('❌ LM Studio 连接失败:', result.error)
+          console.error(`❌ ${result.apiType.toUpperCase()} 连接失败:`, result.error)
         }
       } catch (error) {
         const wasConnected = isConnected.value
@@ -267,15 +267,15 @@ export default {
         
         // 只在连接状态发生变化时打印日志
         if (wasConnected) {
-          console.error('❌ LM Studio 连接失败:', error.message)
+          console.error('❌ API连接失败:', error.message)
         }
       }
     }
 
-    // 发送消息到 LM Studio
-    const sendToLMStudio = async (message) => {
+    // 发送消息到AI服务
+    const sendToAI = async (message) => {
       try {
-        const result = await lmStudioAPI.sendChatMessage(message, {
+        const result = await apiManager.sendChatMessage(message, {
           model: chatConfig.model,
           temperature: chatConfig.temperature,
           maxTokens: chatConfig.maxTokens,
@@ -320,8 +320,8 @@ export default {
         loading.value = true
         
         try {
-          // 发送到 LM Studio
-          const response = await sendToLMStudio(val)
+          // 发送到AI服务
+          const response = await sendToAI(val)
           
           // 添加AI回复
           const aiMessage = {

@@ -1,249 +1,415 @@
 <template>
-  <div class="config-panel" :class="{ 'open': isOpen }">
-    <div class="config-header" @click="togglePanel">
-      <span class="config-icon">⚙️</span>
-      <span class="config-title">配置设置</span>
-      <span class="config-arrow" :class="{ 'rotated': isOpen }">▼</span>
+  <div class="config-panel">
+    <div class="config-header">
+      <h3>⚙️ 配置设置</h3>
+      <button @click="togglePanel" class="toggle-btn">
+        {{ isExpanded ? '收起' : '展开' }}
+      </button>
     </div>
     
-    <div class="config-content" v-show="isOpen">
+    <div v-if="isExpanded" class="config-content">
+      <!-- API类型选择 -->
       <div class="config-section">
-        <h3>LM Studio 连接设置</h3>
-        
-        <div class="form-group">
-          <label for="api-url">API 地址:</label>
+        <h4>🔌 API类型</h4>
+        <div class="api-selector">
+          <label class="api-option">
+            <input 
+              type="radio" 
+              v-model="selectedAPI" 
+              value="lmstudio"
+              @change="handleAPIChange"
+            >
+            <span class="api-label">
+              本地LMStudio
+            </span>
+          </label>
+          <label class="api-option">
+            <input 
+              type="radio" 
+              v-model="selectedAPI" 
+              value="dify"
+              @change="handleAPIChange"
+            >
+            <span class="api-label">
+              云端Dify
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- LM Studio 配置 -->
+      <div v-if="selectedAPI === 'lmstudio'" class="config-section">
+        <h4>🏠 LM Studio 配置</h4>
+        <div class="config-item">
+          <label>API地址:</label>
           <input 
-            id="api-url"
-            v-model="config.apiUrl" 
+            v-model="lmstudioConfig.baseURL" 
             type="text" 
             placeholder="http://localhost:1234/v1"
-            @change="updateConfig"
-          />
+            @blur="updateLMStudioConfig"
+          >
         </div>
-        
-        <div class="form-group">
-          <label for="timeout">超时时间 (秒):</label>
+        <div class="config-item">
+          <label>超时时间 (秒):</label>
           <input 
-            id="timeout"
-            v-model.number="config.timeout" 
+            v-model.number="lmstudioConfig.timeout" 
             type="number" 
-            min="5" 
-            max="120"
-            @change="updateConfig"
-          />
+            min="5000" 
+            max="120000"
+            @blur="updateLMStudioConfig"
+          >
         </div>
-        
-        <div class="form-group">
-          <label for="model">模型名称:</label>
+      </div>
+
+      <!-- Dify 配置 -->
+      <div v-if="selectedAPI === 'dify'" class="config-section">
+        <h4>☁️ Dify 配置</h4>
+        <div class="config-item">
+          <label>API地址:</label>
           <input 
-            id="model"
-            v-model="config.model" 
+            v-model="difyConfig.baseURL" 
             type="text" 
-            placeholder="local-model"
-            @change="updateConfig"
-          />
+            placeholder="https://api.dify.ai/v1"
+            @blur="updateDifyConfig"
+          >
+        </div>
+        <div class="config-item">
+          <label>API密钥:</label>
+          <input 
+            v-model="difyConfig.apiKey" 
+            type="password" 
+            placeholder="输入您的Dify API密钥"
+            @blur="updateDifyConfig"
+          >
+        </div>
+        <div class="config-item">
+          <label>应用ID:</label>
+          <input 
+            v-model="difyConfig.appId" 
+            type="text" 
+            placeholder="输入您的Dify应用ID"
+            @blur="updateDifyConfig"
+          >
+        </div>
+        <div class="config-item">
+          <label>超时时间 (秒):</label>
+          <input 
+            v-model.number="difyConfig.timeout" 
+            type="number" 
+            min="5000" 
+            max="120000"
+            @blur="updateDifyConfig"
+          >
         </div>
         
-        <div class="form-group">
-          <label for="temperature">温度 (创造性):</label>
+        <!-- Dify应用选择 -->
+        <div v-if="difyApps.length > 0" class="config-item">
+          <label>选择应用:</label>
+          <select v-model="selectedAppId" @change="handleAppChange">
+            <option value="">请选择应用</option>
+            <option 
+              v-for="app in difyApps" 
+              :key="app.id" 
+              :value="app.id"
+            >
+              {{ app.name }} ({{ app.mode }})
+            </option>
+          </select>
+        </div>
+        
+        <button @click="loadDifyApps" class="load-apps-btn">
+          🔄 加载应用列表
+        </button>
+      </div>
+
+      <!-- AI参数配置 -->
+      <div class="config-section">
+        <h4>🤖 AI参数</h4>
+        <div class="config-item">
+          <label>模型/应用:</label>
           <input 
-            id="temperature"
-            v-model.number="config.temperature" 
+            v-model="aiConfig.model" 
+            type="text" 
+            :placeholder="selectedAPI === 'lmstudio' ? 'local-model' : '应用ID'"
+            @blur="updateAIConfig"
+          >
+        </div>
+        <div class="config-item">
+          <label>温度 (Temperature):</label>
+          <input 
+            v-model.number="aiConfig.temperature" 
             type="range" 
             min="0" 
             max="2" 
             step="0.1"
-            @input="updateConfig"
-          />
-          <span class="range-value">{{ config.temperature }}</span>
+            @input="updateAIConfig"
+          >
+          <span class="value-display">{{ aiConfig.temperature }}</span>
         </div>
-        
-        <div class="form-group">
-          <label for="max-tokens">最大令牌数:</label>
+        <div class="config-item">
+          <label>最大令牌数:</label>
           <input 
-            id="max-tokens"
-            v-model.number="config.maxTokens" 
+            v-model.number="aiConfig.maxTokens" 
             type="number" 
             min="100" 
             max="4000"
-            @change="updateConfig"
-          />
+            @blur="updateAIConfig"
+          >
         </div>
-      </div>
-      
-      <div class="config-section">
-        <h3>系统提示词</h3>
-        <div class="form-group">
-          <label for="system-prompt">自定义系统提示词:</label>
+        <div class="config-item">
+          <label>系统提示词:</label>
           <textarea 
-            id="system-prompt"
-            v-model="config.systemPrompt" 
-            rows="4"
-            placeholder="你是一个友好的AI助手，请用中文回答用户的问题。"
-            @change="updateConfig"
+            v-model="aiConfig.systemPrompt" 
+            rows="3"
+            placeholder="设置AI助手的角色和行为..."
+            @blur="updateAIConfig"
           ></textarea>
         </div>
       </div>
-      
+
+      <!-- 连接状态 -->
       <div class="config-section">
-        <h3>连接测试</h3>
-        <div class="test-buttons">
-          <button @click="testConnection" :disabled="testing">
-            {{ testing ? '测试中...' : '测试连接' }}
-          </button>
-          <button @click="getModels" :disabled="loadingModels">
-            {{ loadingModels ? '加载中...' : '获取模型列表' }}
-          </button>
+        <h4>📡 连接状态</h4>
+        <div class="connection-status">
+          <span :class="['status-dot', { 'connected': isConnected }]"></span>
+          <span class="status-text">
+            {{ isConnected ? `${selectedAPI.toUpperCase()} 已连接` : `${selectedAPI.toUpperCase()} 未连接` }}
+          </span>
         </div>
-        
-        <div v-if="testResult" class="test-result" :class="testResult.success ? 'success' : 'error'">
-          {{ testResult.message }}
-        </div>
-        
-        <div v-if="models.length > 0" class="models-list">
-          <h4>可用模型:</h4>
-          <ul>
-            <li v-for="model in models" :key="model.id">
-              {{ model.id }} ({{ model.object }})
-            </li>
-          </ul>
-        </div>
+        <button @click="checkConnection" class="check-connection-btn">
+          🔍 检查连接
+        </button>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="config-actions">
+        <button @click="saveConfig" class="save-btn">
+          💾 保存配置
+        </button>
+        <button @click="resetConfig" class="reset-btn">
+          🔄 重置配置
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
-import lmStudioAPI from '../services/lmStudioApi.js'
+import { ref, reactive, onMounted, watch } from 'vue'
+import apiManager from '../services/apiManager.js'
 
 export default {
   name: 'ConfigPanel',
   emits: ['config-updated'],
   setup(props, { emit }) {
-    const isOpen = ref(false)
-    const testing = ref(false)
-    const loadingModels = ref(false)
-    const testResult = ref(null)
-    const models = ref([])
-    
-    // 默认配置
-    const config = reactive({
-      apiUrl: 'http://localhost:1234/v1',
-      timeout: 30,
+    // 响应式数据
+    const isExpanded = ref(false)
+    const selectedAPI = ref('lmstudio')
+    const isConnected = ref(false)
+    const difyApps = ref([])
+    const selectedAppId = ref('')
+
+    // LM Studio配置
+    const lmstudioConfig = reactive({
+      baseURL: 'http://localhost:1234/v1',
+      timeout: 30000
+    })
+
+    // Dify配置
+    const difyConfig = reactive({
+      baseURL: 'https://api.dify.ai/v1',
+      timeout: 30000,
+      apiKey: '',
+      appId: ''
+    })
+
+    // AI参数配置
+    const aiConfig = reactive({
       model: 'local-model',
       temperature: 0.7,
       maxTokens: 1000,
       systemPrompt: '你是一个友好的AI助手，请用中文回答用户的问题。'
     })
-    
-    // 切换面板显示
+
+    // 切换面板展开状态
     const togglePanel = () => {
-      isOpen.value = !isOpen.value
+      isExpanded.value = !isExpanded.value
     }
-    
-    // 更新配置
-    const updateConfig = () => {
-      // 更新 API 服务配置
-      lmStudioAPI.setBaseURL(config.apiUrl)
-      lmStudioAPI.setTimeout(config.timeout * 1000)
-      
-      // 通知父组件配置已更新
-      emit('config-updated', { ...config })
-      
-      // 保存到本地存储
-      localStorage.setItem('lmStudioConfig', JSON.stringify(config))
+
+    // 处理API类型切换
+    const handleAPIChange = () => {
+      apiManager.switchAPI(selectedAPI.value)
+      checkConnection()
+      emit('config-updated', {
+        apiType: selectedAPI.value,
+        config: getCurrentConfig()
+      })
     }
-    
-    // 测试连接
-    const testConnection = async () => {
-      testing.value = true
-      testResult.value = null
-      
+
+    // 更新LM Studio配置
+    const updateLMStudioConfig = () => {
+      apiManager.setConfig('lmstudio', lmstudioConfig)
+      apiManager.applyConfig('lmstudio')
+      apiManager.saveConfig()
+    }
+
+    // 更新Dify配置
+    const updateDifyConfig = () => {
+      apiManager.setConfig('dify', difyConfig)
+      apiManager.applyConfig('dify')
+      apiManager.saveConfig()
+    }
+
+    // 更新AI配置
+    const updateAIConfig = () => {
+      emit('config-updated', {
+        apiType: selectedAPI.value,
+        config: getCurrentConfig()
+      })
+    }
+
+    // 获取当前配置
+    const getCurrentConfig = () => {
+      return {
+        lmstudio: { ...lmstudioConfig },
+        dify: { ...difyConfig },
+        ai: { ...aiConfig }
+      }
+    }
+
+    // 检查连接状态
+    const checkConnection = async () => {
       try {
-        const result = await lmStudioAPI.checkConnection()
+        const result = await apiManager.checkConnection()
+        isConnected.value = result.connected
+        
         if (result.connected) {
-          testResult.value = {
-            success: true,
-            message: '✅ 连接成功！LM Studio 服务正常运行。'
-          }
+          console.log(`✅ ${selectedAPI.value.toUpperCase()} 连接成功`)
         } else {
-          testResult.value = {
-            success: false,
-            message: `❌ 连接失败: ${result.error}`
-          }
+          console.error(`❌ ${selectedAPI.value.toUpperCase()} 连接失败:`, result.error)
         }
       } catch (error) {
-        testResult.value = {
-          success: false,
-          message: `❌ 测试失败: ${error.message}`
-        }
-      } finally {
-        testing.value = false
+        isConnected.value = false
+        console.error('连接检查失败:', error)
       }
     }
-    
-    // 获取模型列表
-    const getModels = async () => {
-      loadingModels.value = true
-      models.value = []
-      
+
+    // 加载Dify应用列表
+    const loadDifyApps = async () => {
       try {
-        const result = await lmStudioAPI.getModels()
+        const result = await apiManager.getModels()
         if (result.success) {
-          models.value = result.models
-          testResult.value = {
-            success: true,
-            message: `✅ 成功获取 ${result.models.length} 个模型`
-          }
+          difyApps.value = result.apps || []
+          console.log('✅ 已加载Dify应用列表')
         } else {
-          testResult.value = {
-            success: false,
-            message: `❌ 获取模型失败: ${result.error}`
-          }
+          console.error('❌ 加载应用列表失败:', result.error)
         }
       } catch (error) {
-        testResult.value = {
-          success: false,
-          message: `❌ 获取模型失败: ${error.message}`
-        }
-      } finally {
-        loadingModels.value = false
+        console.error('加载应用列表失败:', error)
       }
     }
-    
-    // 加载保存的配置
-    const loadSavedConfig = () => {
-      const saved = localStorage.getItem('lmStudioConfig')
-      if (saved) {
+
+    // 处理应用选择
+    const handleAppChange = () => {
+      if (selectedAppId.value) {
+        difyConfig.appId = selectedAppId.value
+        updateDifyConfig()
+      }
+    }
+
+    // 保存配置
+    const saveConfig = () => {
+      apiManager.saveConfig()
+      localStorage.setItem('aiConfig', JSON.stringify(aiConfig))
+      console.log('✅ 配置已保存')
+    }
+
+    // 重置配置
+    const resetConfig = () => {
+      if (confirm('确定要重置所有配置吗？')) {
+        // 重置API配置
+        apiManager.setConfig('lmstudio', {
+          baseURL: 'http://localhost:1234/v1',
+          timeout: 30000
+        })
+        apiManager.setConfig('dify', {
+          baseURL: 'https://api.dify.ai/v1',
+          timeout: 30000,
+          apiKey: '',
+          appId: ''
+        })
+        
+        // 重置AI配置
+        Object.assign(aiConfig, {
+          model: 'local-model',
+          temperature: 0.7,
+          maxTokens: 1000,
+          systemPrompt: '你是一个友好的AI助手，请用中文回答用户的问题。'
+        })
+        
+        // 重新加载配置
+        loadConfig()
+        console.log('✅ 配置已重置')
+      }
+    }
+
+    // 加载配置
+    const loadConfig = () => {
+      // 加载API配置
+      const apiInfo = apiManager.getAPIInfo()
+      selectedAPI.value = apiInfo.currentAPI
+      
+      if (apiInfo.config) {
+        if (selectedAPI.value === 'lmstudio') {
+          Object.assign(lmstudioConfig, apiInfo.config)
+        } else if (selectedAPI.value === 'dify') {
+          Object.assign(difyConfig, apiInfo.config)
+        }
+      }
+      
+      // 加载AI配置
+      const savedAIConfig = localStorage.getItem('aiConfig')
+      if (savedAIConfig) {
         try {
-          const savedConfig = JSON.parse(saved)
-          Object.assign(config, savedConfig)
-          
-          // 只更新API服务配置，不触发父组件更新
-          lmStudioAPI.setBaseURL(config.apiUrl)
-          lmStudioAPI.setTimeout(config.timeout * 1000)
+          Object.assign(aiConfig, JSON.parse(savedAIConfig))
         } catch (error) {
-          console.error('加载配置失败:', error)
+          console.error('加载AI配置失败:', error)
         }
       }
     }
-    
-    onMounted(() => {
-      loadSavedConfig()
+
+    // 监听API类型变化
+    watch(selectedAPI, (newAPI) => {
+      if (newAPI === 'dify' && difyConfig.apiKey) {
+        loadDifyApps()
+      }
     })
-    
+
+    // 组件挂载时初始化
+    onMounted(() => {
+      loadConfig()
+      checkConnection()
+    })
+
     return {
-      isOpen,
-      config,
-      testing,
-      loadingModels,
-      testResult,
-      models,
+      isExpanded,
+      selectedAPI,
+      isConnected,
+      difyApps,
+      selectedAppId,
+      lmstudioConfig,
+      difyConfig,
+      aiConfig,
       togglePanel,
-      updateConfig,
-      testConnection,
-      getModels
+      handleAPIChange,
+      updateLMStudioConfig,
+      updateDifyConfig,
+      updateAIConfig,
+      checkConnection,
+      loadDifyApps,
+      handleAppChange,
+      saveConfig,
+      resetConfig
     }
   }
 }
@@ -251,43 +417,39 @@ export default {
 
 <style scoped>
 .config-panel {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: #f8f9fa;
+  border-radius: 8px;
   margin: 10px;
   overflow: hidden;
 }
 
 .config-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 15px 20px;
-  cursor: pointer;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  transition: background 0.3s ease;
+  padding: 15px 20px;
+  background: #e9ecef;
+  border-bottom: 1px solid #dee2e6;
 }
 
-.config-header:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+.config-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #495057;
 }
 
-.config-icon {
-  font-size: 1.2rem;
+.toggle-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
 }
 
-.config-title {
-  flex: 1;
-  font-weight: 600;
-}
-
-.config-arrow {
-  transition: transform 0.3s ease;
-}
-
-.config-arrow.rotated {
-  transform: rotate(180deg);
+.toggle-btn:hover {
+  background: #0056b3;
 }
 
 .config-content {
@@ -298,138 +460,165 @@ export default {
   margin-bottom: 25px;
 }
 
-.config-section h3 {
-  color: #333;
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 8px;
+.config-section h4 {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  color: #495057;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 5px;
 }
 
-.form-group {
+.api-selector {
+  display: flex;
+  gap: 15px;
+}
+
+.api-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+.api-option:hover {
+  border-color: #007bff;
+}
+
+.api-option input[type="radio"] {
+  margin-right: 8px;
+}
+
+.api-option input[type="radio"]:checked + .api-label {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.api-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.api-icon {
+  font-size: 16px;
+}
+
+.config-item {
   margin-bottom: 15px;
 }
 
-.form-group label {
+.config-item label {
   display: block;
   margin-bottom: 5px;
-  color: #555;
+  font-size: 12px;
+  color: #6c757d;
   font-weight: 500;
 }
 
-.form-group input,
-.form-group textarea {
+.config-item input[type="text"],
+.config-item input[type="password"],
+.config-item input[type="number"],
+.config-item select,
+.config-item textarea {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
   font-size: 14px;
-  transition: border-color 0.3s ease;
+  box-sizing: border-box;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
-}
-
-.form-group input[type="range"] {
+.config-item input[type="range"] {
   width: calc(100% - 50px);
   margin-right: 10px;
 }
 
-.range-value {
+.value-display {
+  font-size: 12px;
+  color: #6c757d;
+  min-width: 30px;
   display: inline-block;
-  width: 40px;
-  text-align: center;
-  font-weight: 600;
-  color: #667eea;
 }
 
-.test-buttons {
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #dc3545;
+}
+
+.status-dot.connected {
+  background: #28a745;
+}
+
+.status-text {
+  font-size: 14px;
+  color: #495057;
+}
+
+.check-connection-btn,
+.load-apps-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 10px;
+}
+
+.check-connection-btn:hover,
+.load-apps-btn:hover {
+  background: #545b62;
+}
+
+.config-actions {
   display: flex;
   gap: 10px;
-  margin-bottom: 15px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #dee2e6;
 }
 
-.test-buttons button {
+.save-btn,
+.reset-btn {
   flex: 1;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  background: #667eea;
-  color: white;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.test-buttons button:hover:not(:disabled) {
-  background: #5a6fd8;
-}
-
-.test-buttons button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.test-result {
   padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
   font-weight: 500;
 }
 
-.test-result.success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+.save-btn {
+  background: #28a745;
+  color: white;
 }
 
-.test-result.error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+.save-btn:hover {
+  background: #218838;
 }
 
-.models-list {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 5px;
+.reset-btn {
+  background: #dc3545;
+  color: white;
 }
 
-.models-list h4 {
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.models-list ul {
-  list-style: none;
-  padding: 0;
-}
-
-.models-list li {
-  padding: 5px 0;
-  border-bottom: 1px solid #e9ecef;
-  color: #666;
-}
-
-.models-list li:last-child {
-  border-bottom: none;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .config-panel {
-    margin: 5px;
-  }
-  
-  .config-content {
-    padding: 15px;
-  }
-  
-  .test-buttons {
-    flex-direction: column;
-  }
+.reset-btn:hover {
+  background: #c82333;
 }
 </style>
+

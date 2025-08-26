@@ -5,7 +5,7 @@
 [![ChatUI](https://img.shields.io/badge/ChatUI-1.4+-orange.svg)](https://chatui.io/)
 [![LM Studio](https://img.shields.io/badge/LM%20Studio-Local%20AI-red.svg)](https://lmstudio.ai/)
 
-基于 [ChatUI](https://chatui.io/) 框架开发的智能体聊天应用，集成 LM Studio 本地 AI 模型。
+基于 [ChatUI](https://chatui.io/) 框架开发的智能体聊天应用，集成 LM Studio 本地 AI 模型又扩展了Dify云端AI的丰富功能。双API架构建议使用策略：开发测试阶段 - 使用LM Studio（快速、免费）；生产环境 - 使用Dify（稳定、功能丰富）；混合模式 - 根据需求动态切换。
 
 ## 📋 目录
 
@@ -22,25 +22,28 @@
 ## ✨ 功能特性
 
 - 🎨 **现代化UI设计** - 基于 ChatUI 框架的优雅界面
-- 🤖 **本地AI模型** - 集成 LM Studio 本地大语言模型
+- 🤖 **双API支持** - 支持 LM Studio 本地模型和 Dify 云端服务
+- 🔄 **动态API切换** - 可在本地和云端AI服务间无缝切换
 - 💬 **实时聊天** - 流畅的对话体验
 - 📚 **多会话管理** - 支持多个聊天会话的创建和管理
 - 💾 **历史记录** - 自动保存聊天记录到本地存储
 - ⚡ **分类快捷回复** - 按类别组织的预设问题（通用、编程、写作、分析）
 - 🛠️ **消息工具栏** - 复制、分享、导出、清空等操作
-- ⚙️ **配置面板** - 自定义AI模型参数和系统提示词
+- ⚙️ **统一配置管理** - 支持多种API的配置和切换
 - 📱 **响应式设计** - 支持桌面和移动设备
-- 🔄 **连接状态监控** - 实时显示 LM Studio 连接状态
+- 🔄 **连接状态监控** - 实时显示API连接状态
 - 🎯 **错误处理** - 完善的错误提示和重试机制
+- ☁️ **云端功能** - Dify平台支持知识库、工作流等高级功能
 
 ## 🚀 快速开始
 
 ### 前置要求
 
 1. **Node.js** (版本 16 或更高)
-2. **LM Studio** 已安装并运行在本地
+2. **LM Studio** 已安装并运行在本地（可选，用于本地AI）
+3. **Dify平台账号** 和API密钥（可选，用于云端AI）
 
-### 安装依赖
+### 安装依赖 node v22.14.0 
 
 ```bash
 # 克隆项目
@@ -72,32 +75,63 @@ npm run preview
 3. 点击"测试 LM Studio 连接"按钮
 4. 如果所有测试通过，点击"打开聊天应用"
 
-### 启动 LM Studio
+### 配置AI服务
 
+#### 选项1: 使用LM Studio（本地）
 1. 打开 LM Studio
 2. 加载您的大语言模型
 3. 启动本地服务器 (默认端口 1234)
 
+#### 选项2: 使用Dify（云端）
+1. 登录 [Dify平台](https://dify.ai)
+2. 创建应用并获取API密钥
+3. 在应用配置面板中填入API信息
+
 ## 🔧 配置说明
 
-### LM Studio API 配置
+### API 配置
 
-应用默认连接到 `http://localhost:1234/v1`，您可以在 `src/services/lmStudioApi.js` 中修改配置：
+应用支持两种AI服务配置：
+
+#### LM Studio API 配置
+
+应用默认连接到 `http://localhost:1234/v1`，您可以在配置面板中修改：
 
 ```javascript
 // 修改 API 地址
-lmStudioAPI.setBaseURL('http://your-lm-studio-url:port/v1')
+apiManager.setConfig('lmstudio', {
+  baseURL: 'http://your-lm-studio-url:port/v1',
+  timeout: 60000
+})
+```
 
-// 修改超时时间
-lmStudioAPI.setTimeout(60000) // 60秒
+#### Dify API 配置
+
+在配置面板中选择Dify选项，填入以下信息：
+
+```javascript
+// Dify配置示例
+apiManager.setConfig('dify', {
+  baseURL: 'https://api.dify.ai/v1',
+  apiKey: 'your-api-key',
+  appId: 'your-app-id',
+  timeout: 30000
+})
 ```
 
 ### 支持的 API 端点
 
+#### LM Studio
 - `GET /v1/models` - 获取可用模型列表
 - `POST /v1/chat/completions` - 发送聊天消息
 - `POST /v1/completions` - 文本补全
 - `POST /v1/embeddings` - 获取文本嵌入向量
+
+#### Dify
+- `GET /v1/apps` - 获取应用列表
+- `POST /v1/chat-messages` - 发送聊天消息
+- `GET /v1/conversations` - 获取会话列表
+- `DELETE /v1/conversations/{id}` - 删除会话
 
 ## 📁 项目结构
 
@@ -110,7 +144,9 @@ charui/
 │   │   ├── MessageToolbar.vue   # 消息工具栏组件
 │   │   └── QuickReplies.vue     # 快捷回复组件
 │   ├── services/
-│   │   └── lmStudioApi.js       # LM Studio API 服务
+│   │   ├── apiManager.js        # API管理器（新增）
+│   │   ├── lmStudioApi.js       # LM Studio API 服务
+│   │   └── difyApi.js           # Dify API 服务（新增）
 │   ├── App.vue                  # 主应用组件
 │   ├── main.js                  # 应用入口
 │   └── style.css                # 全局样式
@@ -118,6 +154,7 @@ charui/
 ├── vite.config.js               # Vite 配置
 ├── package.json                 # 项目配置
 ├── CHAT_FEATURES.md             # 聊天功能详细说明
+├── DIFY_INTEGRATION_GUIDE.md    # Dify集成指南（新增）
 ├── CONTRIBUTING.md              # 贡献指南
 ├── CHANGELOG.md                 # 更新日志
 └── README.md                    # 项目说明
@@ -217,6 +254,7 @@ npm run dev
 ## 📖 详细文档
 
 - [聊天功能详细说明](CHAT_FEATURES.md) - 完整的功能使用指南
+- [Dify集成指南](DIFY_INTEGRATION_GUIDE.md) - Dify平台使用详细说明
 - [配置面板使用说明](CHAT_FEATURES.md#4-配置ai参数) - AI参数配置指南
 - [快捷回复使用说明](CHAT_FEATURES.md#方法二使用快捷回复) - 快捷回复功能说明
 - [贡献指南](CONTRIBUTING.md) - 如何参与项目开发
@@ -226,6 +264,7 @@ npm run dev
 
 - [ChatUI 官方文档](https://chatui.io/docs/quick-start)
 - [LM Studio 官网](https://lmstudio.ai/)
+- [Dify 官网](https://dify.ai/)
 - [Vue.js 官方文档](https://vuejs.org/)
 - [Vite 官方文档](https://vitejs.dev/)
 
