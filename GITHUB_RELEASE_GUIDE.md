@@ -26,12 +26,12 @@
   "author": "您的名字 <your-email@example.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/charui.git"
+    "url": "https://github.com/18701745572/SynerBotAi.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/charui/issues"
+    "url": "https://github.com/18701745572/SynerBotAi/issues"
   },
-  "homepage": "https://github.com/your-username/charui#readme"
+  "homepage": "https://github.com/18701745572/SynerBotAi#readme"
 }
 ```
 
@@ -87,7 +87,7 @@ git commit -m "feat: 初始版本发布
 - 响应式设计，支持桌面和移动设备"
 
 # 添加远程仓库
-git remote add origin https://github.com/your-username/charui.git
+git remote add origin https://github.com/18701745572/SynerBotAi.git
 
 # 推送到 GitHub
 git branch -M main
@@ -150,7 +150,7 @@ git push origin v1.0.0
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/charui.git
+git clone https://github.com/18701745572/SynerBotAi.git
 cd charui
 
 # 安装依赖
@@ -168,8 +168,8 @@ npm run dev
 ### 🔗 相关链接
 
 - [在线演示](https://your-username.github.io/charui/)
-- [详细文档](https://github.com/your-username/charui#readme)
-- [问题反馈](https://github.com/your-username/charui/issues)
+- [详细文档](https://github.com/18701745572/SynerBotAi#readme)
+- [问题反馈](https://github.com/18701745572/SynerBotAi/issues)
 ```
 
 5. 勾选 "This is a pre-release"（如果是预发布版本）

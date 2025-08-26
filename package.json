@@ -23,12 +23,12 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/charui.git"
+    "url": "https://github.com/18701745572/SynerBotAi.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/charui/issues"
+    "url": "https://github.com/18701745572/SynerBotAi/issues"
   },
-  "homepage": "https://github.com/your-username/charui#readme",
+  "homepage": "https://github.com/18701745572/SynerBotAi#readme",
   "dependencies": {
     "@chatui/core": "^1.4.0",
     "axios": "^1.6.0",

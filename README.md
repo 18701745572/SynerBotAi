@@ -44,7 +44,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/charui.git
+git clone https://github.com/18701745572/SynerBotAi.git
 cd charui
 
 # 安装依赖
@@ -191,16 +191,16 @@ const quickRepliesData = ref({
 
 ### 贡献方式
 
-- 🐛 [报告 Bug](https://github.com/your-username/charui/issues/new?template=bug_report.md)
-- 💡 [提出新功能建议](https://github.com/your-username/charui/issues/new?template=feature_request.md)
-- 📝 [改进文档](https://github.com/your-username/charui/issues/new?template=documentation.md)
-- 🔧 [提交代码](https://github.com/your-username/charui/compare)
+- 🐛 [报告 Bug](https://github.com/18701745572/SynerBotAi/issues/new?template=bug_report.md)
+- 💡 [提出新功能建议](https://github.com/18701745572/SynerBotAi/issues/new?template=feature_request.md)
+- 📝 [改进文档](https://github.com/18701745572/SynerBotAi/issues/new?template=documentation.md)
+- 🔧 [提交代码](https://github.com/18701745572/SynerBotAi/compare)
 
 ### 开发环境设置
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-username/charui.git
+git clone https://github.com/18701745572/SynerBotAi.git
 cd charui
 
 # 安装依赖

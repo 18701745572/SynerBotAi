@@ -177,8 +177,8 @@ charui/
 
 如果您在使用过程中遇到问题或有建议，请通过以下方式联系我们：
 
-- [GitHub Issues](https://github.com/your-username/charui/issues)
-- [GitHub Discussions](https://github.com/your-username/charui/discussions)
+- [GitHub Issues](https://github.com/18701745572/SynerBotAi/issues)
+- [GitHub Discussions](https://github.com/18701745572/SynerBotAi/discussions)
 - 邮箱: your-email@example.com
 
 ---

@@ -19,7 +19,7 @@
 
 如果您发现了 Bug，请通过以下方式报告：
 
-1. 使用 [Bug 报告模板](https://github.com/your-username/charui/issues/new?template=bug_report.md)
+1. 使用 [Bug 报告模板](https://github.com/18701745572/SynerBotAi/issues/new?template=bug_report.md)
 2. 提供详细的复现步骤
 3. 包含错误信息和截图
 4. 说明您的环境信息（操作系统、浏览器版本等）
@@ -28,7 +28,7 @@
 
 如果您有新功能的想法，请：
 
-1. 使用 [功能建议模板](https://github.com/your-username/charui/issues/new?template=feature_request.md)
+1. 使用 [功能建议模板](https://github.com/18701745572/SynerBotAi/issues/new?template=feature_request.md)
 2. 详细描述功能需求和使用场景
 3. 说明为什么需要这个功能
 4. 提供可能的实现方案
@@ -56,7 +56,7 @@
 ### 1. 克隆项目
 
 ```bash
-git clone https://github.com/your-username/charui.git
+git clone https://github.com/18701745572/SynerBotAi.git
 cd charui
 ```
 
@@ -310,8 +310,8 @@ git push origin feature/your-feature-name
 
 如果您有任何问题或建议，可以通过以下方式联系我们：
 
-- [GitHub Issues](https://github.com/your-username/charui/issues)
-- [GitHub Discussions](https://github.com/your-username/charui/discussions)
+- [GitHub Issues](https://github.com/18701745572/SynerBotAi/issues)
+- [GitHub Discussions](https://github.com/18701745572/SynerBotAi/discussions)
 - 邮箱: your-email@example.com
 
 ---
