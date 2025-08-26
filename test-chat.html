@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天组件测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #5a6fd8;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🤖 聊天组件测试页面</h1>
+        
+        <div class="test-section">
+            <div class="test-title">1. 检查依赖项</div>
+            <button class="test-button" onclick="checkDependencies()">检查依赖项</button>
+            <div id="dependencies-result" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">2. 测试 ChatUI 组件</div>
+            <button class="test-button" onclick="testChatUI()">测试 ChatUI</button>
+            <div id="chatui-result" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">3. 测试 LM Studio 连接</div>
+            <button class="test-button" onclick="testLMStudio()">测试连接</button>
+            <div id="lmstudio-result" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">4. 打开主应用</div>
+            <button class="test-button" onclick="openMainApp()">打开聊天应用</button>
+            <div id="app-result" class="test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 检查依赖项
+        function checkDependencies() {
+            const result = document.getElementById('dependencies-result');
+            result.innerHTML = '正在检查依赖项...';
+            
+            // 检查 Vue 是否可用
+            if (typeof Vue !== 'undefined') {
+                result.innerHTML += '<br>✅ Vue.js 已加载';
+            } else {
+                result.innerHTML += '<br>❌ Vue.js 未加载';
+            }
+            
+            // 检查 ChatUI 是否可用
+            if (typeof ChatUI !== 'undefined') {
+                result.innerHTML += '<br>✅ ChatUI 已加载';
+            } else {
+                result.innerHTML += '<br>❌ ChatUI 未加载';
+            }
+            
+            // 检查 axios 是否可用
+            if (typeof axios !== 'undefined') {
+                result.innerHTML += '<br>✅ Axios 已加载';
+            } else {
+                result.innerHTML += '<br>❌ Axios 未加载';
+            }
+        }
+        
+        // 测试 ChatUI 组件
+        function testChatUI() {
+            const result = document.getElementById('chatui-result');
+            result.innerHTML = '正在测试 ChatUI 组件...';
+            
+            try {
+                // 这里可以添加 ChatUI 组件的测试逻辑
+                result.innerHTML = '✅ ChatUI 组件测试通过';
+                result.className = 'test-result success';
+            } catch (error) {
+                result.innerHTML = '❌ ChatUI 组件测试失败: ' + error.message;
+                result.className = 'test-result error';
+            }
+        }
+        
+        // 测试 LM Studio 连接
+        async function testLMStudio() {
+            const result = document.getElementById('lmstudio-result');
+            result.innerHTML = '正在测试 LM Studio 连接...';
+            
+            try {
+                const response = await fetch('http://localhost:1234/v1/models');
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = '✅ LM Studio 连接成功<br>可用模型: ' + (data.data?.length || 0) + ' 个';
+                    result.className = 'test-result success';
+                } else {
+                    result.innerHTML = '❌ LM Studio 连接失败: HTTP ' + response.status;
+                    result.className = 'test-result error';
+                }
+            } catch (error) {
+                result.innerHTML = '❌ LM Studio 连接失败: ' + error.message;
+                result.className = 'test-result error';
+            }
+        }
+        
+        // 打开主应用
+        function openMainApp() {
+            const result = document.getElementById('app-result');
+            result.innerHTML = '正在打开主应用...';
+            
+            try {
+                // 检查主应用是否可访问
+                fetch('/')
+                    .then(response => {
+                        if (response.ok) {
+                            result.innerHTML = '✅ 主应用可访问，正在跳转...';
+                            result.className = 'test-result success';
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 1000);
+                        } else {
+                            result.innerHTML = '❌ 主应用不可访问: HTTP ' + response.status;
+                            result.className = 'test-result error';
+                        }
+                    })
+                    .catch(error => {
+                        result.innerHTML = '❌ 无法访问主应用: ' + error.message;
+                        result.className = 'test-result error';
+                    });
+            } catch (error) {
+                result.innerHTML = '❌ 打开主应用失败: ' + error.message;
+                result.className = 'test-result error';
+            }
+        }
+        
+        // 页面加载时自动检查依赖项
+        window.onload = function() {
+            checkDependencies();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>应用测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: rgba(46, 213, 115, 0.3);
+            border: 1px solid #2ed573;
+        }
+        .error {
+            background: rgba(255, 71, 87, 0.3);
+            border: 1px solid #ff4757;
+        }
+        .info {
+            background: rgba(54, 123, 245, 0.3);
+            border: 1px solid #367bf5;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5a6fd8;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 智能体聊天应用 - 测试页面</h1>
+        
+        <div class="test-section">
+            <h2>📋 应用状态检查</h2>
+            <div id="app-status" class="status info">正在检查应用状态...</div>
+            <button onclick="checkAppStatus()">重新检查</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🔗 LM Studio 连接测试</h2>
+            <div id="lm-status" class="status info">点击按钮测试 LM Studio 连接</div>
+            <button onclick="testLMStudio()">测试 LM Studio 连接</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 快速启动</h2>
+            <p>如果所有测试都通过，您可以：</p>
+            <button onclick="openApp()">打开聊天应用</button>
+            <button onclick="openLMStudio()">打开 LM Studio</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📖 使用说明</h2>
+            <ol>
+                <li>确保 LM Studio 已启动并运行在端口 1234</li>
+                <li>点击"打开聊天应用"按钮</li>
+                <li>在聊天界面中开始与 AI 对话</li>
+                <li>使用配置面板调整设置</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // 检查应用状态
+        async function checkAppStatus() {
+            const statusDiv = document.getElementById('app-status');
+            statusDiv.className = 'status info';
+            statusDiv.textContent = '正在检查应用状态...';
+            
+            try {
+                const response = await fetch('http://localhost:3000');
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ 聊天应用运行正常！';
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ 聊天应用响应异常';
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ 无法连接到聊天应用，请确保应用已启动';
+            }
+        }
+
+        // 测试 LM Studio 连接
+        async function testLMStudio() {
+            const statusDiv = document.getElementById('lm-status');
+            statusDiv.className = 'status info';
+            statusDiv.textContent = '正在测试 LM Studio 连接...';
+            
+            try {
+                const response = await fetch('http://localhost:1234/v1/models');
+                if (response.ok) {
+                    const data = await response.json();
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = `✅ LM Studio 连接成功！可用模型: ${data.data?.length || 0} 个`;
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ LM Studio 响应异常';
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ 无法连接到 LM Studio，请确保服务已启动';
+            }
+        }
+
+        // 打开聊天应用
+        function openApp() {
+            window.open('http://localhost:3000', '_blank');
+        }
+
+        // 打开 LM Studio
+        function openLMStudio() {
+            window.open('http://localhost:1234', '_blank');
+        }
+
+        // 页面加载时自动检查
+        window.onload = function() {
+            checkAppStatus();
+        };
+    </script>
+</body>
+</html>

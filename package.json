@@ -1,0 +1,45 @@
+{
+  "name": "charui",
+  "version": "1.0.0",
+  "description": "基于 ChatUI 框架的智能体聊天应用，集成 LM Studio 本地 AI 模型",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "chat",
+    "ai",
+    "vue",
+    "chatui",
+    "lm-studio",
+    "local-ai",
+    "chatbot"
+  ],
+  "author": "Your Name <your-email@example.com>",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/charui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/charui/issues"
+  },
+  "homepage": "https://github.com/your-username/charui#readme",
+  "dependencies": {
+    "@chatui/core": "^1.4.0",
+    "axios": "^1.6.0",
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.0",
+    "vite": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

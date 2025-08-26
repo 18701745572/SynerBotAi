@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天功能调试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5a6fd8;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: rgba(46, 213, 115, 0.3);
+            border: 1px solid #2ed573;
+        }
+        .error {
+            background: rgba(255, 71, 87, 0.3);
+            border: 1px solid #ff4757;
+        }
+        .info {
+            background: rgba(54, 123, 245, 0.3);
+            border: 1px solid #367bf5;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 聊天功能调试页面</h1>
+        
+        <div class="test-section">
+            <h2>📋 应用状态检查</h2>
+            <div id="app-status" class="status info">正在检查应用状态...</div>
+            <button onclick="checkAppStatus()">重新检查</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🔗 LM Studio 连接测试</h2>
+            <div id="lm-status" class="status info">点击按钮测试 LM Studio 连接</div>
+            <button onclick="testLMStudio()">测试 LM Studio 连接</button>
+        </div>
+
+        <div class="test-section">
+            <h2>💬 聊天功能测试</h2>
+            <input type="text" id="test-message" placeholder="输入测试消息..." value="你好">
+            <button onclick="testChat()">发送测试消息</button>
+            <button onclick="testQuickReply()">测试快捷回复</button>
+            <div id="chat-result" class="status info">等待测试...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 快速启动</h2>
+            <button onclick="openApp()">打开聊天应用</button>
+            <button onclick="openLMStudio()">打开 LM Studio</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 调试日志</h2>
+            <button onclick="clearLog()">清空日志</button>
+            <div id="debug-log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // 调试日志
+        function log(message) {
+            const logDiv = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').textContent = '';
+        }
+
+        // 过滤thinking内容
+        function filterThinkingContent(content) {
+            if (!content) return content;
+            
+            // 移除<think>标签及其内容
+            let filteredContent = content.replace(/<think>[\s\S]*?<\/think>/gi, '');
+            
+            // 移除可能的XML标签
+            filteredContent = filteredContent.replace(/<[^>]*>/g, '');
+            
+            // 清理多余的空行和空格
+            filteredContent = filteredContent
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .join('\n');
+            
+            // 如果过滤后内容为空，返回原始内容
+            if (!filteredContent.trim()) {
+                return content;
+            }
+            
+            return filteredContent.trim();
+        }
+
+        // 检查应用状态
+        async function checkAppStatus() {
+            const statusDiv = document.getElementById('app-status');
+            statusDiv.className = 'status info';
+            statusDiv.textContent = '正在检查应用状态...';
+            log('检查应用状态...');
+            
+            try {
+                const response = await fetch('http://localhost:3000');
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ 聊天应用运行正常！';
+                    log('✅ 聊天应用运行正常');
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ 聊天应用响应异常';
+                    log('❌ 聊天应用响应异常');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ 无法连接到聊天应用，请确保应用已启动';
+                log('❌ 无法连接到聊天应用: ' + error.message);
+            }
+        }
+
+        // 测试 LM Studio 连接
+        async function testLMStudio() {
+            const statusDiv = document.getElementById('lm-status');
+            statusDiv.className = 'status info';
+            statusDiv.textContent = '正在测试 LM Studio 连接...';
+            log('测试 LM Studio 连接...');
+            
+            try {
+                const response = await fetch('http://localhost:1234/v1/models');
+                if (response.ok) {
+                    const data = await response.json();
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = `✅ LM Studio 连接成功！可用模型: ${data.data?.length || 0} 个`;
+                    log('✅ LM Studio 连接成功');
+                    log('可用模型: ' + JSON.stringify(data.data, null, 2));
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ LM Studio 响应异常';
+                    log('❌ LM Studio 响应异常');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ 无法连接到 LM Studio，请确保服务已启动';
+                log('❌ 无法连接到 LM Studio: ' + error.message);
+            }
+        }
+
+        // 测试聊天功能
+        async function testChat() {
+            const message = document.getElementById('test-message').value;
+            const resultDiv = document.getElementById('chat-result');
+            
+            if (!message.trim()) {
+                resultDiv.className = 'status error';
+                resultDiv.textContent = '❌ 请输入测试消息';
+                return;
+            }
+
+            resultDiv.className = 'status info';
+            resultDiv.textContent = '正在发送测试消息...';
+            log('发送测试消息: ' + message);
+            
+            try {
+                const response = await fetch('http://localhost:1234/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'local-model',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: '你是一个友好的AI助手，请用中文回答用户的问题。'
+                            },
+                            {
+                                role: 'user',
+                                content: message
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000,
+                        stream: false
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    let aiResponse = data.choices[0].message.content;
+                    
+                    // 过滤thinking内容
+                    aiResponse = filterThinkingContent(aiResponse);
+                    
+                    resultDiv.className = 'status success';
+                    resultDiv.textContent = `✅ AI回复: ${aiResponse}`;
+                    log('✅ 收到AI回复: ' + aiResponse);
+                } else {
+                    resultDiv.className = 'status error';
+                    resultDiv.textContent = '❌ 发送消息失败';
+                    log('❌ 发送消息失败');
+                }
+            } catch (error) {
+                resultDiv.className = 'status error';
+                resultDiv.textContent = '❌ 发送消息失败: ' + error.message;
+                log('❌ 发送消息失败: ' + error.message);
+            }
+        }
+
+        // 测试快捷回复
+        function testQuickReply() {
+            document.getElementById('test-message').value = '你好';
+            testChat();
+        }
+
+        // 打开聊天应用
+        function openApp() {
+            window.open('http://localhost:3000', '_blank');
+            log('打开聊天应用');
+        }
+
+        // 打开 LM Studio
+        function openLMStudio() {
+            window.open('http://localhost:1234', '_blank');
+            log('打开 LM Studio');
+        }
+
+        // 页面加载时自动检查
+        window.onload = function() {
+            log('调试页面加载完成');
+            checkAppStatus();
+            testLMStudio();
+        };
+    </script>
+</body>
+</html>
