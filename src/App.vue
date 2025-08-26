@@ -433,9 +433,9 @@ export default {
     }
 
     // 处理新建聊天
-    const handleNewChat = (newSession) => {
-      currentSessionId.value = newSession.id
-      messages.value = []
+    const handleNewChat = () => {
+      // 创建新会话
+      const newSession = createNewSession()
       console.log('新建聊天:', newSession)
     }
 
